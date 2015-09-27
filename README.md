@@ -12,6 +12,6 @@ References
 Disclaimer
 -------------------
 
-Ongoing work. May contain bugs. Not fully tested.
+Educational purpose. Ongoing work. May contain bugs. Not fully tested.
 
 THE PROVIDER MAKES NO REPRESENTATIONS ABOUT THE SUITABILITY, USE, OR PERFORMANCE OF THIS PROGRAM OR ABOUT ANY CONTENT OR INFORMATION MADE ACCESSIBLE BY THESE, FOR ANY PURPOSE.
