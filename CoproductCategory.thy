@@ -45,13 +45,6 @@ lemma MakeCat_extract:
 by auto
 
 
-lemma "P(x) \<and> Q(x)"
-proof (intro conjI)
-  fix x P Q
-  show 1: "P x" sorry
-  next show 2: "Q x" sorry
-qed
-
 lemma DiagonalFtor'PreFunctor:
   assumes "Category C"
   shows "PreFunctor (\<Delta>' C)"
@@ -73,8 +66,11 @@ proof (intro conjI)
         by (auto simp: DiagonalFunctor'_def)
       }
       next { fix f g
-        have "\<And>f g. (f ;;\<^bsub>CatDom (\<Delta>' C)\<^esub> g, f ;;\<^bsub>CatDom (\<Delta>' C)\<^esub> g) = (f, f) ;;\<^bsub>CatCod (\<Delta>' C)\<^esub> (g, g)"
-        sorry
+        assume f_g_ext: "f \<approx>>\<^bsub>CatDom (\<Delta>' C)\<^esub> g"
+        have "(f ;;\<^bsub>CatDom (\<Delta>' C)\<^esub> g, f ;;\<^bsub>CatDom (\<Delta>' C)\<^esub> g) = (f, f) ;;\<^bsub>CatCod (\<Delta>' C)\<^esub> (g, g)"
+        using assms f_g_ext
+        apply (simp add: Category.CompDefined_def DiagonalFunctor'_def ProductCategory_def, auto)
+        by (simp add: MakeCat_def, auto)
       }
       then show ?thesis using assms by (simp add: DiagonalFunctor'_def)
     qed
@@ -82,30 +78,36 @@ proof (intro conjI)
         (\<exists>Y\<in>obj\<^bsub>CatCod (\<Delta>' C)\<^esub>.
             \<Delta>' C ## id\<^bsub>CatDom (\<Delta>' C)\<^esub> X = id\<^bsub>CatCod (\<Delta>' C)\<^esub> Y)"
     proof - (* (intro allI impI) *)
-      { fix X
-        have "\<And>X. \<Delta>' C ## id\<^bsub>CatDom (\<Delta>' C)\<^esub> X = (id\<^bsub>CatDom (\<Delta>' C)\<^esub> X, id\<^bsub>CatDom (\<Delta>' C)\<^esub> X)"
+      (* LEMME 1 *)
+      { have "\<And>X. \<Delta>' C ## id\<^bsub>CatDom (\<Delta>' C)\<^esub> X = (id\<^bsub>CatDom (\<Delta>' C)\<^esub> X, id\<^bsub>CatDom (\<Delta>' C)\<^esub> X)"
         using assms by (simp add:DiagonalFunctor'_def)
-        }
-      next { fix X
-        have "\<And>X. \<Delta>' C @@ X = (X, X)"
-        using assms
+      }
+      (* LEMME 2 *)
+      next {
+        fix X
+        assume X_ext: "X \<in> obj\<^bsub>CatDom (\<Delta>' C)\<^esub>"
+        have "\<Delta>' C @@ X = (X, X)"
+        using assms X_ext
           apply (simp add: MapO_def DiagonalFunctor'_def ProductCategory_def MakeCat_def)
-          apply (rule the_equality)
-          apply auto
-          (* 1. hypothèse précédente, 2. et 3. unicité de l'identité par rapport aux objets*)
-          sorry
-        }
-      next { fix X
-        have "\<And>X. id\<^bsub>CatCod (\<Delta>' C)\<^esub> (X, X) = (id\<^bsub>CatDom (\<Delta>' C)\<^esub> X, id\<^bsub>CatDom (\<Delta>' C)\<^esub> X)"
-        using assms sorry
+          apply (rule the_equality, auto)
+          by (simp add: Category.IdInj)+
       }
+      (* LEMME 3 *)
       next { fix X
-        have "\<And>X. \<Delta>' C ## id\<^bsub>CatDom (\<Delta>' C)\<^esub> X = id\<^bsub>CatCod (\<Delta>' C)\<^esub> (X, X)"
-        using assms sorry
+        assume X_ext: "X \<in> obj\<^bsub>CatDom (\<Delta>' C)\<^esub>"
+        have "id\<^bsub>CatCod (\<Delta>' C)\<^esub> (X, X) = (id\<^bsub>CatDom (\<Delta>' C)\<^esub> X, id\<^bsub>CatDom (\<Delta>' C)\<^esub> X)"
+        using assms X_ext
+        by (simp add: DiagonalFunctor'_def ProductCategory_def MakeCat_def)
       }
-      then show ?thesis using assms
+      (* LEMME 4 *)
+      next { fix X
+        assume X_ext: "X \<in> obj\<^bsub>CatDom (\<Delta>' C)\<^esub>"
+        have "\<Delta>' C ## id\<^bsub>CatDom (\<Delta>' C)\<^esub> X = id\<^bsub>CatCod (\<Delta>' C)\<^esub> (X, X)"
+        using assms X_ext
+        by (simp add: DiagonalFunctor'_def ProductCategory_def MakeCat_def)
+      }
+      then show ?thesis
         by (metis (no_types, lifting) Category.select_convs(1) DiagonalFunctor'_def Functor.select_convs(1) Functor.select_convs(2) MakeCatObj ProductCategory_def SigmaI)
     qed
-        (* HERE : pas fini *)
   qed
 end
