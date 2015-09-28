@@ -15,36 +15,24 @@ definition DiagonalFunctor' where
       MapM = \<lambda>m. (m, m)
   \<rparr>"
 
-abbreviation "\<Delta>' C \<equiv> DiagonalFunctor' C"
-
 definition DiagonalFunctor where
   "DiagonalFunctor C \<equiv> MakeFtor (DiagonalFunctor' C)"
 
+abbreviation "\<Delta>' C \<equiv> DiagonalFunctor' C"
 abbreviation "\<Delta> C \<equiv> DiagonalFunctor C"
 
-lemma "\<And>X. X \<in> obj\<^bsub>CatDom (DiagonalFunctor' C)\<^esub> \<Longrightarrow>
-         \<exists>Y.
-            DiagonalFunctor' C ## id\<^bsub>CatDom (DiagonalFunctor' C)\<^esub> X =
-            id\<^bsub>CatCod (DiagonalFunctor' C)\<^esub> Y"
-apply (rule exI)
-oops 
-
-(*
-\<And>f g. Category C \<Longrightarrow>
-           (f ;;\<^bsub>C\<^esub> g, f ;;\<^bsub>C\<^esub> g) =
-           (f, f) ;;\<^bsub>MakeCat \<lparr>Obj = (obj\<^bsub>C\<^esub>) \<times> (obj\<^bsub>C\<^esub>), Mor = (mor\<^bsub>C\<^esub>) \<times> (mor\<^bsub>C\<^esub>), Dom = \<lambda>(f1, f2). (dom\<^bsub>C\<^esub> f1, dom\<^bsub>C\<^esub> f2), Cod = \<lambda>(f1, f2). (cod\<^bsub>C\<^esub> f1, cod\<^bsub>C\<^esub> f2), Id = \<lambda>(o1, o2). (id\<^bsub>C\<^esub> o1, id\<^bsub>C\<^esub> o2), Comp = \<lambda>(f, g) (f', g'). (f ;;\<^bsub>C\<^esub> f', g ;;\<^bsub>C\<^esub> g')\<rparr>\<^esub>
-           (g, g)
-*)
-find_theorems "THE _ . _ = _"
-
-lemma MakeCat_extract:
+(* Step 0 *)
+lemma DiagonalFtor'Obj:
   assumes "Category C"
-  and "f \<in> Mor C"
-  and "g \<in> Mor C"
-  shows "f ;;\<^bsub>C\<^esub> g = (Comp C) f g"
-by auto
+  assumes X_ext: "X \<in> obj\<^bsub>C\<^esub>"
+  shows "\<Delta>' C @@ X = (X, X)"  
+  apply (simp add: MapO_def DiagonalFunctor'_def ProductCategory_def MakeCat_def)
+  apply (rule the_equality, auto)
+  using assms
+  by (simp add: Category.IdInj)+
 
 
+(* Step 1: Proof that (\<Delta>' C) is prefunctor *)
 lemma DiagonalFtor'PreFunctor:
   assumes "Category C"
   shows "PreFunctor (\<Delta>' C)"
@@ -56,16 +44,16 @@ proof (intro conjI)
           \<Delta>' C ## (f ;;\<^bsub>CatDom (\<Delta>' C)\<^esub> g) =
           (\<Delta>' C ## f) ;;\<^bsub>CatCod (\<Delta>' C)\<^esub> (\<Delta>' C ## g)"
     proof -
-      { fix f g
-        assume f_g_ext: "f \<approx>>\<^bsub>CatDom (\<Delta>' C)\<^esub> g"
+      { assume f_g_ext: "f \<approx>>\<^bsub>CatDom (\<Delta>' C)\<^esub> g"
         have "\<And>f g. \<Delta>' C ## (f ;;\<^bsub>CatDom (\<Delta>' C)\<^esub> g) = (f ;;\<^bsub>CatDom (\<Delta>' C)\<^esub> g, f ;;\<^bsub>CatDom (\<Delta>' C)\<^esub> g)"
         by (auto simp: DiagonalFunctor'_def)
       }
-      next { fix f g
+      next { 
         have "\<And>f g. (\<Delta>' C ## f) ;;\<^bsub>CatCod (\<Delta>' C)\<^esub> (\<Delta>' C ## g) = (f, f) ;;\<^bsub>CatCod (\<Delta>' C)\<^esub> (g, g)"
         by (auto simp: DiagonalFunctor'_def)
       }
-      next { fix f g
+      next {
+        fix f g
         assume f_g_ext: "f \<approx>>\<^bsub>CatDom (\<Delta>' C)\<^esub> g"
         have "(f ;;\<^bsub>CatDom (\<Delta>' C)\<^esub> g, f ;;\<^bsub>CatDom (\<Delta>' C)\<^esub> g) = (f, f) ;;\<^bsub>CatCod (\<Delta>' C)\<^esub> (g, g)"
         using assms f_g_ext
@@ -110,4 +98,50 @@ proof (intro conjI)
         by (metis (no_types, lifting) Category.select_convs(1) DiagonalFunctor'_def Functor.select_convs(1) Functor.select_convs(2) MakeCatObj ProductCategory_def SigmaI)
     qed
   qed
+
+(* Step 2: Show that functors applied to arrows are distributed over dom and cod of arrow *)
+lemma DiagonalFtor'FtorM:  
+  assumes "Category C"
+  shows "FunctorM (DiagonalFunctor' C)"
+proof (auto simp add: FunctorM_def IdFtor'PreFunctor assms FunctorM_axioms_def)
+  {
+    fix f X Y
+    assume a: "f maps\<^bsub>CatDom (\<Delta>' C)\<^esub> X to Y" 
+    show "((\<Delta>' C) ## f) maps\<^bsub>CatCod (\<Delta>' C)\<^esub> ((\<Delta>' C) @@ X) to ((\<Delta>' C) @@ Y)"
+    proof -
+      have "X \<in> obj\<^bsub>CatDom (\<Delta>' C)\<^esub>" and "Y \<in> obj\<^bsub>CatDom (\<Delta>' C)\<^esub>"
+        using a assms
+        by (simp add: Category.MapsToObj DiagonalFunctor'_def)+
+      moreover have "\<Delta>' C ## f \<in> mor\<^bsub>CatCod (\<Delta>' C)\<^esub>"
+        using a assms
+        by (simp add: DiagonalFunctor'_def ProductCategory_def MakeCat_def, auto)
+      moreover have "dom\<^bsub>CatCod (\<Delta>' C)\<^esub> (\<Delta>' C ## f) = \<Delta>' C @@ X"
+        proof -
+          have "\<Delta>' C @@ X = (X, X)"
+            by (metis DiagonalFtor'Obj DiagonalFunctor'_def Functor.select_convs(1) assms calculation(1))
+          moreover have "dom\<^bsub>CatCod (\<Delta>' C)\<^esub> (\<Delta>' C ## f) = (X, X)"
+            using assms a
+            by (simp add: DiagonalFunctor'_def ProductCategory_def MakeCat_def, auto)
+          ultimately show ?thesis by simp
+          qed
+      moreover have "cod\<^bsub>CatCod (\<Delta>' C)\<^esub> (\<Delta>' C ## f) = \<Delta>' C @@ Y"
+        proof -
+          have "\<Delta>' C @@ Y = (Y, Y)"
+            by (metis DiagonalFtor'Obj DiagonalFunctor'_def Functor.select_convs(1) assms calculation(2))
+          moreover have "cod\<^bsub>CatCod (\<Delta>' C)\<^esub> (\<Delta>' C ## f) = (Y, Y)"
+            using assms a
+            by (simp add: DiagonalFunctor'_def ProductCategory_def MakeCat_def, auto)
+          ultimately show ?thesis by simp
+          qed
+      ultimately show ?thesis using assms a by blast
+    qed
+  }
+  show "PreFunctor (\<Delta>' C)" using assms by (rule DiagonalFtor'PreFunctor)
+qed
+
+(* Step 3 : Final gather *)
+lemma DiagonalFtorFtor:  "Category C \<Longrightarrow> Functor (\<Delta> C)"
+by (auto simp add: DiagonalFunctor_def DiagonalFtor'FtorM intro: MakeFtor)
+
+
 end
