@@ -53,8 +53,8 @@ subsection "Left and Right Projection Functors"
 text{* We now define left and right projection functors for product categories *}
 
 (* Let [C], [D] two categories. [ProductLeftProjectionFunctor] maps product category [C] \<times> [D] to [C] *)
-definition MakeProductLeftProjection where
-  "MakeProductLeftProjection C \<equiv> MakeCat \<lparr>
+definition MakeCatLeftProjection where
+  "MakeCatLeftProjection C \<equiv> MakeCat \<lparr>
       Obj = fst ` Obj C,
       Mor = fst ` Mor C,
       Dom = \<lambda>f. fst (Dom C (f, SOME g. True)),
@@ -64,81 +64,65 @@ definition MakeProductLeftProjection where
         \<lambda>f f'. fst (Comp C (f, SOME g. True) (f', SOME g'. True))
   \<rparr>"
 
-
-lemma CatMorProductLeftProjection:
-  assumes "Category C"
-  and "Category D"
-  and "(f, g) \<in> Mor (ProductCategory C D)"
-  shows "f \<in> Mor C"
-by (metis Category.select_convs(2) MakeCatMor ProductCategory_def SigmaD1 assms(3))
-
-lemma CatMorProductRightProjection:
-  assumes "Category C"
-  and "Category D"
-  and "(f, g) \<in> Mor (ProductCategory C D)"
-  shows "g \<in> Mor D"
-by (metis Category.select_convs(2) MakeCatMor ProductCategory_def SigmaD2 assms(3))
-
-lemma CatDomProductLeftProjection:
-  assumes "Category C"
-  and "Category D"
-  and "(f, g) \<in> Mor (ProductCategory C D)"
-  shows "fst (Dom (ProductCategory C D) (f, g)) = Dom C f"
-proof -
-  have f_is_mor: "f \<in> Mor C" using assms by (rule CatMorProductLeftProjection)
-  have g_is_mor: "g \<in> Mor D" using assms by (rule CatMorProductRightProjection)
-  have 1: "Dom (ProductCategory C D) = (\<lambda>(f1, f2)\<in>(mor\<^bsub>C\<^esub>) \<times> (mor\<^bsub>D\<^esub>). (dom\<^bsub>C\<^esub> f1, dom\<^bsub>D\<^esub> f2))" by (simp add: ProductCategory_def MakeCat_def)
-  have 2:"(\<lambda>(f1, f2)\<in>(mor\<^bsub>C\<^esub>) \<times> (mor\<^bsub>D\<^esub>). (dom\<^bsub>C\<^esub> f1, dom\<^bsub>D\<^esub> f2)) (f, g) = (dom\<^bsub>C\<^esub> f, dom\<^bsub>D\<^esub> g)" using f_is_mor g_is_mor by (auto)
-  have 3: "Dom (ProductCategory C D) (f, g) = (Dom C f, Dom D g)" using 1 2 by (auto)
-  thus ?thesis by (auto)
-qed
-
-(* Le fait que Obj D est-il vraiment contraignant ? *)
-lemma CatObjProductLeftProjection:
-  assumes "Category C"
-  and "Category D"
-  and "Obj D \<noteq> {}"
-  shows "fst ` (Obj (ProductCategory C D)) = Obj C"
-proof -
-  have "Obj (ProductCategory C D) = Obj C \<times> Obj D" by (simp add: ProductCategory_def MakeCat_def)
-  thus ?thesis using assms by auto
-qed
-
-
-
-lemma MakeCatSelfClosure:
-  assumes "Category C"
-  shows "C = MakeCat \<lparr>
-    Obj = Obj C, Mor = Mor C,
-        Dom = Dom C,
-        Cod = Cod C,
-        Id = Id C,
-        Comp = Comp C
+definition LeftProjectionFtor' where
+  "LeftProjectionFtor' C \<equiv> \<lparr>
+    CatDom = C,
+    CatCod = MakeCatLeftProjection C,
+    MapM = \<lambda>(f1, f2). f1
   \<rparr>"
-apply (unfold_locales)
-unfolding MakeCat_def
+
+(*
+definition 
+  MakeCat :: "('o,'m,'a) Category_scheme \<Rightarrow> ('o,'m,'a) Category_scheme" where
+  "MakeCat C \<equiv> \<lparr>
+      Obj = Obj C , 
+      Mor = Mor C , 
+      Dom = restrict (Dom C) (Mor C) , 
+      Cod = restrict (Cod C) (Mor C) , 
+      Id  = restrict (Id C) (Obj C) , 
+      Comp = \<lambda> f g . (restrict (split (Comp C)) ({(f,g) | f g . f \<approx>>\<^bsub>C\<^esub> g})) (f,g), 
+      \<dots> = Category.more C
+  \<rparr>"
+*)
+
+lemma ExtentionalityClosure:
+  assumes "Category C"
+  shows "MakeCat C = C"
+
 proof -
-  have "Dom C = restrict (Dom \<lparr>Obj = obj\<^bsub>C\<^esub>, Mor = mor\<^bsub>C\<^esub>, Dom = Dom C, Cod = Cod C, Id = Category.Id C, Comp = op ;;\<^bsub>C\<^esub>\<rparr>)
-                  (mor\<^bsub>\<lparr>Obj = obj\<^bsub>C\<^esub>, Mor = mor\<^bsub>C\<^esub>, Dom = Dom C, Cod = Cod C, Id = Category.Id C, Comp = op ;;\<^bsub>C\<^esub>\<rparr>\<^esub>)"
-    apply (simp add: restrict_def)
-    apply (rule ext)
-    proof -
-    have "x \<in> Mor C"
-
-apply (simp add: MakeCat_def, auto)
-
-sledgehammer[provers="cvc4 remote_vampire z3 spass e alt_ergo verit cvc3", verbose]
-
+  { have "Obj C = Obj (MakeCat C)"
+    using assms
+    by (simp add: MakeCatObj)    
+  }
+  next { have "Mor C = Mor (MakeCat C)"
+    using assms
+    by (simp add: MakeCatMor)
+  }
+  next { have "Dom C = Dom (MakeCat C)"
+    using assms (* lemma MakeCatDom: "f \<in> mor\<^bsub>C\<^esub> \<Longrightarrow> dom\<^bsub>C\<^esub> f = dom\<^bsub>MakeCat C\<^esub> f" *)
+    sorry
+  }
+  next { have "Cod C = Cod (MakeCat C)"
+    sorry
+  }
+  next { have "Id C = Id (MakeCat C)"
+    sorry
+  }
+  next { have "Comp C = Comp (MakeCat C)"
+    sorry
+  }
+  then show ?thesis sorry
+qed
 
 lemma
   assumes "Category C1"
   and "Category C2"
   and "Obj C2 \<noteq> {}"
   and "Mor C2 \<noteq> {}"
-  shows "MakeProductLeftProjection (ProductCategory C1 C2) = C1"
-unfolding MakeProductLeftProjection_def
+  shows "MakeCatLeftProjection (ProductCategory C1 C2) = C1"
+unfolding MakeCatLeftProjection_def
+unfolding MakeCat_def
 
-(* HERE *)
 proof -
   have "fst ` (obj\<^bsub>ProductCategory C1 C2\<^esub>) = Obj C1" using assms by (simp add: ProductCategory_def MakeCat_def)
   have "fst ` (mor\<^bsub>ProductCategory C1 C2\<^esub>) = Mor C1" using assms by (simp add: ProductCategory_def MakeCat_def)
@@ -151,7 +135,7 @@ proof -
     (* sledgehammer[provers="alt_ergo", verbose] *)
     sledgehammer[provers="cvc3", smt_trace, verbose]
 *)
-    
+
     by (simp add: ProductCategory_def MakeCat_def, auto)
 apply (subst CatObjProductLeftProjection)
 apply (subst CatDomProductLeftProjection)

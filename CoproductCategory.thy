@@ -19,7 +19,7 @@ definition DiagonalFunctor where
   "DiagonalFunctor C \<equiv> MakeFtor (DiagonalFunctor' C)"
 
 abbreviation "\<Delta>' C \<equiv> DiagonalFunctor' C"
-abbreviation "\<Delta> C \<equiv> DiagonalFunctor C"
+abbreviation "\<Delta>  C \<equiv> DiagonalFunctor C"
 
 (* Step 0 *)
 lemma DiagonalFtor'Obj:
@@ -43,25 +43,12 @@ proof (intro conjI)
   next show "\<forall>f g. f \<approx>>\<^bsub>CatDom (\<Delta>' C)\<^esub> g \<longrightarrow>
           \<Delta>' C ## (f ;;\<^bsub>CatDom (\<Delta>' C)\<^esub> g) =
           (\<Delta>' C ## f) ;;\<^bsub>CatCod (\<Delta>' C)\<^esub> (\<Delta>' C ## g)"
-    proof -
-      { assume f_g_ext: "f \<approx>>\<^bsub>CatDom (\<Delta>' C)\<^esub> g"
-        have "\<And>f g. \<Delta>' C ## (f ;;\<^bsub>CatDom (\<Delta>' C)\<^esub> g) = (f ;;\<^bsub>CatDom (\<Delta>' C)\<^esub> g, f ;;\<^bsub>CatDom (\<Delta>' C)\<^esub> g)"
-        by (auto simp: DiagonalFunctor'_def)
-      }
-      next { 
-        have "\<And>f g. (\<Delta>' C ## f) ;;\<^bsub>CatCod (\<Delta>' C)\<^esub> (\<Delta>' C ## g) = (f, f) ;;\<^bsub>CatCod (\<Delta>' C)\<^esub> (g, g)"
-        by (auto simp: DiagonalFunctor'_def)
-      }
-      next {
-        fix f g
-        assume f_g_ext: "f \<approx>>\<^bsub>CatDom (\<Delta>' C)\<^esub> g"
-        have "(f ;;\<^bsub>CatDom (\<Delta>' C)\<^esub> g, f ;;\<^bsub>CatDom (\<Delta>' C)\<^esub> g) = (f, f) ;;\<^bsub>CatCod (\<Delta>' C)\<^esub> (g, g)"
-        using assms f_g_ext
-        apply (simp add: Category.CompDefined_def DiagonalFunctor'_def ProductCategory_def, auto)
-        by (simp add: MakeCat_def, auto)
-      }
-      then show ?thesis using assms by (simp add: DiagonalFunctor'_def)
-    qed
+(* Found after proving the following lemmas:
+   "\<And>f g. \<Delta>' C ## (f ;;\<^bsub>CatDom (\<Delta>' C)\<^esub> g) = (f ;;\<^bsub>CatDom (\<Delta>' C)\<^esub> g, f ;;\<^bsub>CatDom (\<Delta>' C)\<^esub> g)"
+   "\<And>f g. (\<Delta>' C ## f) ;;\<^bsub>CatCod (\<Delta>' C)\<^esub> (\<Delta>' C ## g) = (f, f) ;;\<^bsub>CatCod (\<Delta>' C)\<^esub> (g, g)"
+   "(f ;;\<^bsub>CatDom (\<Delta>' C)\<^esub> g, f ;;\<^bsub>CatDom (\<Delta>' C)\<^esub> g) = (f, f) ;;\<^bsub>CatCod (\<Delta>' C)\<^esub> (g, g)"
+*)
+ by (auto simp: DiagonalFunctor'_def  Category.CompDefined_def ProductCategory_def MakeCat_def)
   next show "\<forall>X. X \<in> obj\<^bsub>CatDom (\<Delta>' C)\<^esub> \<longrightarrow>
         (\<exists>Y\<in>obj\<^bsub>CatCod (\<Delta>' C)\<^esub>.
             \<Delta>' C ## id\<^bsub>CatDom (\<Delta>' C)\<^esub> X = id\<^bsub>CatCod (\<Delta>' C)\<^esub> Y)"
