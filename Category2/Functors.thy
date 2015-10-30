@@ -39,7 +39,7 @@ locale FunctorExt =
   fixes F :: "('o1, 'o2, 'm1, 'm2, 'a1, 'a2, 'a) Functor_scheme"  (structure) 
   assumes FunctorMapExt: "(MapM F) \<in> extensional (Mor (CatDom F))"
 
-locale Functor = FunctorM + FunctorExt
+locale Functor = FunctorM (* + FunctorExt *)
 
 definition 
   MakeFtor :: "('o1, 'o2, 'm1, 'm2, 'a, 'b,'r) Functor_scheme \<Rightarrow> ('o1, 'o2, 'm1, 'm2, 'a, 'b,'r) Functor_scheme" where
@@ -234,7 +234,6 @@ proof(intro_locales)
       qed
     }
   qed
-  show "FunctorExt (MakeFtor F)" by(simp add: FunctorExt_def MakeFtor_def)
 qed
 
 definition 
