@@ -4,9 +4,11 @@ imports
   Main
   "Category2/Category"
   "Category2/Functors"
+  "Category2/NatTrans"
   "ProductCategory"
   "Homset"
-  
+  "FunctorComposition"
+
 begin
 
 record ('o1, 'o2, 'm1, 'm2, 'a, 'b, 'c, 'd) Adjunction = 
@@ -14,7 +16,7 @@ record ('o1, 'o2, 'm1, 'm2, 'a, 'b, 'c, 'd) Adjunction =
   CatCod :: "('o2, 'm2, 'b) Category_scheme"
   LeftFtor :: "('o1, 'o2, 'm1, 'm2, 'a, 'b, 'c) Functor_scheme"
   RightFtor :: "('o2, 'o1, 'm2, 'm1, 'b, 'a, 'd) Functor_scheme"
-  Bijs :: "'o1 \<Rightarrow> 'o2 \<Rightarrow> ('m2 \<Rightarrow> 'm1)"
+  Unit :: "'o1 \<Rightarrow> 'o2 \<Rightarrow> ('m2 \<Rightarrow> 'm1)"
   (* A \<in> CDom, B \<in> CCod,
      Hom_CCod (LeftFtor ## A, B) \<cong> Hom_CDom (A, RightFtor ## B)*)
 
@@ -36,27 +38,66 @@ locale FunctorExt =
 locale Functor = FunctorM + FunctorExt
 *)
 
+definition coextensional :: "'a set \<Rightarrow> 'b set \<Rightarrow> ('a \<Rightarrow> 'b) set"
+  where "coextensional A B = {f. \<forall>x. if x \<notin> A then f x = undefined else f x \<in> B}"
+
 (*
 definition extensional :: "'a set \<Rightarrow> ('a \<Rightarrow> 'b) set"
   where "extensional A = {f. \<forall>x. x \<notin> A \<longrightarrow> f x = undefined}"
+
+definition "restrict" :: "('a \<Rightarrow> 'b) \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> 'b"
+  where "restrict f A = (\<lambda>x. if x \<in> A then f x else undefined)"
 *)
 (* l'ensemble des flèches tq tout elt n'étant pas du domaine entraine que f n'y soit pas définie*)
 
 locale Adjunction =
   fixes Adj :: "('o1, 'o2, 'm1, 'm2, 'a, 'b, 'c, 'd) Adjunction" (structure)
-  assumes CatDom[simp]:          "Category (CatDom Adj)"
-  and     CatCod[simp]:           "Category (CatCod Adj)"
-  and     FtorLeftFtor:           "Functor (LeftFtor Adj)"
-  and     FtorRightFtor:          "Functor (RightFtor Adj)"
-  and     BijectionFamily:     "A \<in> Obj (CatDom Adj) \<Longrightarrow> B \<in> Obj (CatCod Adj) \<Longrightarrow>
-                                bij ((Bijs Adj) A B)"
-  and     BijectionHomsetDoms: "A \<in> Obj (CatDom Adj) \<Longrightarrow> B \<in> Obj (CatCod Adj) \<Longrightarrow>
-                                (Bijs Adj A B) \<in> extensional (Hom (CatCod Adj) (LeftFtor ## A) B)"
-  and     BijectionNatural:        "False"
+  assumes CatDom[simp]:  "Category (CatDom Adj)"
+  and     CatCod[simp]:   "Category (CatCod Adj)"
+  and     FtorLeftFtor:   "Functor (LeftFtor Adj)"
+  and     FtorRightFtor:  "Functor (RightFtor Adj)"
+  and     UnitOneToOne:   "A \<in> Obj (CatDom Adj) \<Longrightarrow> B \<in> Obj (CatCod Adj) \<Longrightarrow>
+                            bij (Unit Adj A B)"
+  and     UnitHomsetDoms: "A \<in> Obj (CatDom Adj) \<Longrightarrow> B \<in> Obj (CatCod Adj) \<Longrightarrow>
+                            (Unit Adj A B) \<in> extensional (Hom (CatCod Adj) ((LeftFtor Adj) @@ A) B)"
+  and     UnitHomsetCods: "A \<in> Obj (CatDom Adj) \<Longrightarrow> B \<in> Obj (CatCod Adj) \<Longrightarrow>
+                            (Unit Adj A B) \<in> coextensional (Hom (CatCod Adj) ((LeftFtor Adj) @@ A) B) (Hom (CatDom Adj) A ((RightFtor Adj) @@ B))"
+  and     UnitNatural:    "False"
+(*
+record ('o1, 'o2, 'm1, 'm2, 'a, 'b) NatTrans = 
+  NTDom :: "('o1, 'o2, 'm1, 'm2, 'a, 'b) Functor" 
+  NTCod :: "('o1, 'o2, 'm1, 'm2, 'a, 'b) Functor" 
+  NatTransMap :: "'o1 \<Rightarrow> 'm2"
+*)
 
   (* A \<in> CDom, B \<in> CCod,
      Hom_CCod (LeftFtor ## A, B) \<cong> Hom_CDom (A, RightFtor ## B)*)
 
+(*
+record ('o1, 'o2, 'm1, 'm2, 'a, 'b) NatTrans = 
+  NTDom :: "('o1, 'o2, 'm1, 'm2, 'a, 'b) Functor" 
+  NTCod :: "('o1, 'o2, 'm1, 'm2, 'a, 'b) Functor" 
+  NatTransMap :: "'o1 \<Rightarrow> 'm2"
+*)
+
+record ('o1, 'o2, 'm1, 'm2, 'a, 'b, 'c, 'd, 'e) Adjunction' = 
+  CatDom :: "('o1, 'm1, 'a) Category_scheme"
+  CatCod :: "('o2, 'm2, 'b) Category_scheme"
+  LeftFtor :: "('o1, 'o2, 'm1, 'm2, 'a, 'b, 'c) Functor_scheme"
+  RightFtor :: "('o2, 'o1, 'm2, 'm1, 'b, 'a, 'd) Functor_scheme"
+  NTUnit :: "('o1, 'o1, 'm1, 'm1, 'a, 'a, 'e) NatTrans_scheme"
+
+locale Adjunction' =
+  fixes Adj :: "('o1, 'o2, 'm1, 'm2, 'a, 'b, 'c, 'd, 'e) Adjunction'" (structure)
+  assumes CatDom[simp]:  "Category (CatDom Adj)"
+  and     CatCod[simp]:   "Category (CatCod Adj)"
+  and     FtorLeftFtor:   "Functor (LeftFtor Adj)"
+  and     FtorRightFtor:  "Functor (RightFtor Adj)"
+  and     UnitNaturalFtorDom: "NTDom (NTUnit Adj) = IdentityFunctor (CatDom Adj)"
+  and     UnitNaturalFtorCod: "False"
+  and     UnitNatural:    "False"
+
+value "(suc ` {1, 2})"
 
 definition HasFiniteProducts =
 
