@@ -144,10 +144,10 @@ proof -
       (* have FunctorMapExt_F: "(MapM F) \<in> extensional (Mor (CatDom F))"
         using Ftor_F unfolding Functor_def by (simp add: FunctorExt.FunctorMapExt) *)
       have "\<forall>m. m \<notin> (Mor (CatDom F)) \<longrightarrow> (MapM F) m = undefined"
-        using Ftor_F unfolding Functor_def by (meson FunctorExt.FunctorMapExt extensional_arb)
+        using Ftor_F unfolding Functor_def (* by (meson FunctorExt.FunctorMapExt extensional_arb) *)
       have "undefined \<notin> Mor (CatDom G)"
         sorry
-      have "\<forall>m. (G \<circ>\<^sub>F\<^sub>t\<^sub>o\<^sub>r F) ## m = G ## F ## m" using assms unfolding FtorComp using assms FtorComp'_def FtorComp_def MakeFtorMor sledgehammer
+      have "\<forall>m. (G \<circ>\<^sub>F\<^sub>t\<^sub>o\<^sub>r F) ## m = G ## F ## m" using assms unfolding FtorComp using assms FtorComp'_def FtorComp_def MakeFtorMor sledgehamme
       moreover have FunctorMapExt_G: "(MapM G) \<in> extensional (Mor (CatDom G))"
         using Ftor_G unfolding Functor_def by (simp add: FunctorExt.FunctorMapExt)
       ultimately show ?thesis unfolding FtorComp_def sledgehamme

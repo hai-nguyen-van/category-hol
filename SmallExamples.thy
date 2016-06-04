@@ -133,5 +133,16 @@ apply (unfold_locales)
 apply (fastforce+)
 done
 
+definition undefined_cat :: "('o, 'm) Category" where 
+  "undefined_cat = MakeCat \<lparr>
+    Obj = { undefined },
+    Mor = { undefined },
+    Dom = \<lambda>f. undefined,
+    Cod = \<lambda>f. undefined,
+    Id = \<lambda>x. undefined,
+    Comp = \<lambda>f1 f2. undefined
+  \<rparr>"
+
+value "undefined = undefined"
 
 end

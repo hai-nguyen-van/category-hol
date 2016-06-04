@@ -1,8 +1,9 @@
 Category Theory in Isabelle/HOL
 ===================
 
-> Some additional libraries for Category Theory -- based on [Katovsky's formalism](http://afp.sourceforge.net/entries/Category2.shtml) -- in Isabelle/HOL
+> Some additional libraries for Category Theory -- based upon [Alexander Katovsky's mechanization](http://afp.sourceforge.net/entries/Category2.shtml) -- in Isabelle/HOL
 
+This project is now deprecated and abandoned. Several restrictions of the initial mechanization do not allow to properly define functors composition. In particular, handling `undefined` constant is necessary and requires to change the entire initial mechanized theory.
 
 References
 -------------------

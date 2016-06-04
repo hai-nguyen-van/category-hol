@@ -7,7 +7,8 @@ imports
 
 begin
 
-definition Hom :: "('o, 'm) Category \<Rightarrow> 'o \<Rightarrow> 'o \<Rightarrow> 'm set" where
+definition Hom :: "('o, 'm, 'a) Category_scheme \<Rightarrow> 'o \<Rightarrow> 'o \<Rightarrow> 'm set" where
   "Hom C A B = { f. \<exists>f \<in> Mor C. Dom C f = A \<and> Cod C f = B }"
+
 
 end

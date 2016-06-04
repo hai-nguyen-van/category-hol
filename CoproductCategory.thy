@@ -127,7 +127,7 @@ proof (auto simp add: FunctorM_def IdFtor'PreFunctor assms FunctorM_axioms_def)
 qed
 
 (* Step 3 : Final gather *)
-lemma DiagonalFtorFtor:  "Category C \<Longrightarrow> Functor (\<Delta> C)"
+theorem DiagonalFtorFtor:  "Category C \<Longrightarrow> Functor (\<Delta> C)"
 by (auto simp add: DiagonalFunctor_def DiagonalFtor'FtorM intro: MakeFtor)
 
 
